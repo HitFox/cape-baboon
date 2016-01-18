@@ -1,0 +1,30 @@
+{
+  "name": "cape-baboon",
+  "version": "1.0.0",
+  "description": "Request throttler for http requests against anamy webservices with unpredictable behavior for mass requests.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HitFox/cape-baboon.git"
+  },
+  "keywords": [
+    "http",
+    "request",
+    "throttler",
+    "node",
+    "node.js"
+  ],
+  "author": "julianbei",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/HitFox/cape-baboon/issues"
+  },
+  "homepage": "https://github.com/HitFox/cape-baboon#readme",
+  "dependencies": {
+    "bluebird": "^3.1.1",
+    "lodash-node": "^3.10.1"
+  }
+}
