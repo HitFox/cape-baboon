@@ -6,7 +6,7 @@ Node.js http request throttler for promises
 ## How it works
 ![How it works](http://i.giphy.com/pFwRzOLfuGHok.gif)
 
-```
+```javascript
 var CapeBaboon = require('./../src/cape-baboon');
 var Request = require('request-promise');
 
