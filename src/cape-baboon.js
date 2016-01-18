@@ -3,30 +3,25 @@
 var _ = require('lodash-node/modern');
 var P = require("bluebird");
 
-var RETRY_TIMEOUT     = 1000;
-var LIMIT_PER_SECOND  = 10;
-var SLOT_RESPAWN      = 4.0 * 1000/LIMIT_PER_SECOND;
-var TOO_MANY_REQUESTS = 429;
-var INFLIGHT          = 'inflight';
-var FULFILLED         = 'fulfilled';
-var THROTTLED         = 'throttled';
-var ERRORED           = 'errored';
+var RETRY_TIMEOUT     = 0;
+var LIMIT_PER_SECOND  = 0;
+var SLOT_RESPAWN      = 0;
+var TOO_MANY_REQUESTS = 0;
+var INFLIGHT          = 'not set';
+var FULFILLED         = 'not set';
+var THROTTLED         = 'not set';
+var ERRORED           = 'not set';
 
 
 function CapeBaboon(options) {
-  RETRY_TIMEOUT     = options.RETRY_TIMEOUT;
-  LIMIT_PER_SECOND  = options.LIMIT_PER_SECOND;
-  SLOT_RESPAWN      = options.SLOT_RESPAWN;
-  TOO_MANY_REQUESTS = options.TOO_MANY_REQUESTS;
-  INFLIGHT          = options.INFLIGHT;
-  FULFILLED         = options.FULFILLED;
-  THROTTLED         = options.THROTTLED;
-  ERRORED           = options.ERRORED;
-  this.init();
-  return this;
-}
-
-function init(){
+  RETRY_TIMEOUT     = options.RETRY_TIMEOUT     || 1000;
+  LIMIT_PER_SECOND  = options.LIMIT_PER_SECOND  || 10;
+  SLOT_RESPAWN      = options.SLOT_RESPAWN      || 4.0 * 1000/LIMIT_PER_SECOND;
+  TOO_MANY_REQUESTS = options.TOO_MANY_REQUESTS || 429;
+  INFLIGHT          = options.INFLIGHT          || 'inflight';
+  FULFILLED         = options.FULFILLED         || 'fulfilled';
+  THROTTLED         = options.THROTTLED         || 'throttled';
+  ERRORED           = options.ERRORED           || 'errored';
   this._pending      = [];
   this._inflight     = [];
   this._reset();
