@@ -3,6 +3,18 @@
 
 Node.js http request throttler for promises
 
+## Configuration
+```javascript
+var RETRY_TIMEOUT     = 0;
+var LIMIT_PER_SECOND  = 0;
+var SLOT_RESPAWN      = 0;
+var TOO_MANY_REQUESTS = 0;
+var INFLIGHT          = 'not set';
+var FULFILLED         = 'not set';
+var THROTTLED         = 'not set';
+var ERRORED           = 'not set';
+```
+
 ## How it works
 ![How it works](http://i.giphy.com/pFwRzOLfuGHok.gif)
 
