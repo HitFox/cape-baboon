@@ -4,6 +4,55 @@ The cape baboon is a node module for mass requests to helpless enemy servers.
 
 It throttles requests and retries them until they are completed regardless of limits and restrictions of the enemy server.
 
+## Installation
+in console:
+```
+npm install cape-baboon
+```
+and in file:
+```javascript
+var CapeBaboon = require('cape-baboon');
+```
+
+## Usage
+
+### creating a queue
+with standard configuration:
+```javascript
+var baboon = new CapeBaboon();
+```
+with own config:
+```javascript
+var baboon = new CapeBaboon({
+  RETRY_TIMEOUT     = 1000,
+  LIMIT_PER_SECOND  = 10
+});
+```
+### enqueue
+There are two ways of enqueueing a request.
+1. The first way is creating a wrapper function for the call and the pushing it to the queue:
+
+  ```javascript
+  var requestCall = function(){
+    return Request('http://www.google.de')
+  };
+
+  baboon.push(requestCall);
+  ```
+2. The second way is using the more handy build in request method:
+
+  ```javascript
+  var requestOptions = {
+    uri: 'http://www.google.de'
+  };
+  baboon.request(requestOptions);
+  ```
+
+  The Cape baboon uses the request-promise node-module.
+  Please refer to: [request-promise](https://www.npmjs.com/package/request-promise) for documentation.
+
+
+
 ## Configuration
 You can configure every baboon queue with initializing it with a options object.
 All the options are, as you might have guessed, optional.
@@ -25,45 +74,6 @@ var options = {
   LOGGER            = function(text){console.log(text);}
 };
 ```
-
-## How it works
-![How it works](http://i.giphy.com/pFwRzOLfuGHok.gif)
-
-### require
-```javascript
-var CapeBaboon = require('cape-baboon');
-```
-### creating a queue
-with standard configuration:
-```javascript
-var baboon = new CapeBaboon();
-```
-with own config:
-```javascript
-var baboon = new CapeBaboon({
-  RETRY_TIMEOUT     = 1000,
-  LIMIT_PER_SECOND  = 10
-});
-```
-### enqueue
-There are two ways of enqueueing a request.
-1. The first way is creating a wrapper function for the call and the pushing it to the queue:
-```javascript
-var requestCall = function(){
-  return Request('http://www.google.de')
-};
-
-baboon.push(requestCall);
-```
-2. The second way is using the more handy build in request method:
-```javascript
-var requestOptions = {
-  uri: 'http://www.google.de'
-};
-baboon.request(requestOptions);
-```
-    The Cape baboon uses the request-promise node-module.
-    Please refer to: [request-promise](https://www.npmjs.com/package/request-promise) for documentation.
 
 ## Examples
 ```javascript
@@ -110,5 +120,8 @@ baboon.request(requestOptions)
     });
 ```
 
+## How it works
+![How it works](http://i.giphy.com/pFwRzOLfuGHok.gif)
+
 ## Thanks
-The original module is written by [@agento](https://github.com/janv)
+The original code is written by [@agento](https://github.com/janv) and the module is enhanced and maintained by [@jbinsen](julianbei).
