@@ -95,7 +95,7 @@ var requestCall = function(){
 // give the request call to the baboon
 baboon.push(requestCall);
 
-// push returns a promise so you can chain it. the result is the result fromt the request call
+// push returns a promise so you can chain it. the result is the result from the request call
 baboon.push(requestCall)
         .then(function(result){
                 console.log(result);
