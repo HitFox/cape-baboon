@@ -1,19 +1,23 @@
 'use strict';
 
 var _ = require('lodash-node/modern');
+var R = require('request-promise');
 var P = require("bluebird");
 
-var RETRY_TIMEOUT     = 0;
-var LIMIT_PER_SECOND  = 0;
-var SLOT_RESPAWN      = 0;
-var TOO_MANY_REQUESTS = 0;
-var INFLIGHT          = 'not set';
-var FULFILLED         = 'not set';
-var THROTTLED         = 'not set';
-var ERRORED           = 'not set';
-
+var RETRY_TIMEOUT     = 0;          // the time to wait for retrying a request
+var LIMIT_PER_SECOND  = 0;          // how many requests are available per second
+var SLOT_RESPAWN      = 0;          // Time in miliseconds for respawning the slots
+var TOO_MANY_REQUESTS = 0;          // The reutrn Status from the Server if there are too many request sent to it. If applicable.
+var INFLIGHT          = 'not set';  // Status while the request call is active
+var FULFILLED         = 'not set';  // Status when the request was successfull
+var THROTTLED         = 'not set';  // Status when the request gets throttled
+var ERRORED           = 'not set';  // Status when the request has thrown an internal error
+var RETRY_ERRORED     = false;      // whether to retry a request if it throws an internal error or not
+var RETRY_FAILED      = false;      // whether to retry a request if it returns an http error code
+var LOGGER            = null        // Logger function
 
 function CapeBaboon(options) {
+
   RETRY_TIMEOUT     = options.RETRY_TIMEOUT     || 1000;
   LIMIT_PER_SECOND  = options.LIMIT_PER_SECOND  || 10;
   SLOT_RESPAWN      = options.SLOT_RESPAWN      || 4.0 * 1000/LIMIT_PER_SECOND;
@@ -21,24 +25,39 @@ function CapeBaboon(options) {
   INFLIGHT          = options.INFLIGHT          || 'inflight';
   FULFILLED         = options.FULFILLED         || 'fulfilled';
   THROTTLED         = options.THROTTLED         || 'throttled';
-  ERRORED           = options.ERRORED           || 'errored';
-  this._pending      = [];
-  this._inflight     = [];
+  ERRORED           = options.FAILED            || 'errored';
+  RETRY_FAILED      = options.RETRY_FAILED      || false;
+  RETRY_ERRORED     = options.RETRY_ERRORED     || false;
+  LOGGER            = options.LOGGER            || function(text){console.log(text);};
+  this._pending     = [];
+  this._inflight    = [];
   this._reset();
 }
 
 CapeBaboon.prototype.push = function (call) {
   var self = this;
   var promise = new P(function(resolve, reject){
-    self._pending.push({
+    var requestObject = {
       call: call,
       resolve: resolve,
       reject: reject,
-      status: null
-    });
+      status: null,
+      throttle: function(){
+        this.status = THROTTLED;
+        self._proceed();
+      }
+    };
+    self._pending.push(requestObject);
   });
   this._proceed();
   return promise;
+};
+
+CapeBaboon.prototype.request = function(options) {
+  var call = function(){
+    return R(options)
+  };
+  return this.push(call);
 };
 
 CapeBaboon.prototype._proceed = function(){
@@ -82,8 +101,14 @@ CapeBaboon.prototype._startPending = function(){
       //should never happen unless _performRequest throws
       //TODO not quite happy with this. I want this to appear in the
       //     console with the original stacktrace (call to adapter.request)
-      request.status = ERRORED;
-      request.reject(e);
+      if(RETRY_ERRORED){
+        LOGGER('ERROR THROTTLED');
+        request.status = THROTTLED;
+        self._proceed();
+      }else{
+        request.status = ERRORED;
+        request.reject(e);
+      }
       return;
     }
     self._takeSlot();
@@ -91,7 +116,7 @@ CapeBaboon.prototype._startPending = function(){
 
     function successHandler(result){
       if (result.status === TOO_MANY_REQUESTS) {
-        console.log('THROTTLED');
+        LOGGER('MESSAGE THROTTLED');
         request.status = THROTTLED;
       } else {
         request.status = FULFILLED;
@@ -101,8 +126,13 @@ CapeBaboon.prototype._startPending = function(){
     }
 
     function errorHandler(error){
-      request.status = FULFILLED;
-      request.reject(error);
+      if(RETRY_FAILED){
+        LOGGER('FAIL THROTTLED');
+        request.status = THROTTLED;
+      }else{
+        request.status = FULFILLED;
+        request.reject(error);
+      }
       self._proceed();
     }
   });
@@ -130,7 +160,6 @@ CapeBaboon.prototype._reset = function(){
   this._numSlots = LIMIT_PER_SECOND;
   this._retryTimeout = null;
 };
-
 
 CapeBaboon.prototype._isWaitingForRetry = function(){
   return this._retryTimeout !== null && this._retryTimeout !== undefined;
