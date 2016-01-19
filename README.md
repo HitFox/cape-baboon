@@ -30,6 +30,7 @@ var baboon = new CapeBaboon({
 ```
 ### enqueue
 There are two ways of enqueueing a request.
+
 1. The first way is creating a wrapper function for the call and the pushing it to the queue:
 
   ```javascript
@@ -125,4 +126,4 @@ baboon.request(requestOptions)
 
 ## Thanks
 The original code is written by [@agento](https://github.com/janv) and the module is enhanced and maintained by [@jbinsen](julianbei).
-Special thanks to [LewisCowper](https://github.com/lewiscowper) for reviewing and testing.
+Special thanks to [@LewisCowper](https://github.com/lewiscowper) for reviewing and testing.
