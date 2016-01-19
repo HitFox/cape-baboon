@@ -48,20 +48,20 @@ var baboon = new CapeBaboon({
 ### enqueue
 There are two ways of enqueueing a request.
 1. The first way is creating a wrapper function for the call and the pushing it to the queue:
-    ```javascript
-    var requestCall = function(){
-      return Request('http://www.google.de')
-    };
+```javascript
+var requestCall = function(){
+  return Request('http://www.google.de')
+};
 
-    baboon.push(requestCall);
-    ```
+baboon.push(requestCall);
+```
 2. The second way is using the more handy build in request method:
-    ```javascript
-    var requestOptions = {
-      uri: 'http://www.google.de'
-    };
-    baboon.request(requestOptions);
-    ```
+```javascript
+var requestOptions = {
+  uri: 'http://www.google.de'
+};
+baboon.request(requestOptions);
+```
     The Cape baboon uses the request-promise node-module.
     Please refer to: [request-promise](https://www.npmjs.com/package/request-promise) for documentation.
 
