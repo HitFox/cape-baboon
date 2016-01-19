@@ -125,3 +125,4 @@ baboon.request(requestOptions)
 
 ## Thanks
 The original code is written by [@agento](https://github.com/janv) and the module is enhanced and maintained by [@jbinsen](julianbei).
+Special thanks to [LewisCowper](https://github.com/lewiscowper) for reviewing and testing.
