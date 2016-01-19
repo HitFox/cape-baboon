@@ -64,7 +64,7 @@ var options = {
   LIMIT_PER_SECOND  = 10,           // how many requests are available per second.
                                     // rule of thumb: 4.0 * 1000/LIMIT_PER_SECOND
   SLOT_RESPAWN      = 4000,         // Time in miliseconds for respawning the slots
-  TOO_MANY_REQUESTS = 429,          // The reutrn Status from the Server if there are too many request sent to it. If applicable.
+  TOO_MANY_REQUESTS = 429,          // The return Status from the Server if there are too many request sent to it. If applicable.
   INFLIGHT          = 'inflight',   // Status while the request call is active
   FULFILLED         = 'fulfilled',  // Status when the request was successfull
   THROTTLED         = 'throttled',  // Status when the request gets throttled
