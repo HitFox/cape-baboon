@@ -17,7 +17,7 @@ var RETRY_FAILED      = false;      // whether to retry a request if it returns 
 var LOGGER            = null        // Logger function
 
 function CapeBaboon(options) {
-
+  options = options || {};
   RETRY_TIMEOUT     = options.RETRY_TIMEOUT     || 1000;
   LIMIT_PER_SECOND  = options.LIMIT_PER_SECOND  || 10;
   SLOT_RESPAWN      = options.SLOT_RESPAWN      || 4.0 * 1000/LIMIT_PER_SECOND;
