@@ -2,6 +2,7 @@
   "name": "cape-baboon",
   "version": "1.0.0",
   "description": "Request throttler for http requests against anamy webservices with unpredictable behavior for mass requests.",
+  "main": "src/cape-baboon.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -24,7 +25,7 @@
   "homepage": "https://github.com/HitFox/cape-baboon#readme",
   "dependencies": {
     "bluebird": "^3.1.1",
-    "lodash-node": "^3.10.1",
+    "lodash": "^4.0.0",
     "request-promise": "^2.0.0"
   }
 }

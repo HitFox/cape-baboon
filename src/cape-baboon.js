@@ -1,6 +1,6 @@
 'use strict';
 
-var _ = require('lodash-node/modern');
+var _ = require('lodash');
 var R = require('request-promise');
 var P = require("bluebird");
 
