@@ -1,6 +1,6 @@
 {
   "name": "cape-baboon",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "Request throttler for http requests against enemy webservices with unpredictable behavior for mass requests.",
   "main": "src/cape-baboon.js",
   "scripts": {

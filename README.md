@@ -24,12 +24,13 @@ var baboon = new CapeBaboon();
 with own config:
 ```javascript
 var baboon = new CapeBaboon({
-  RETRY_TIMEOUT     = 1000,
-  LIMIT_PER_SECOND  = 10
+  RETRY_TIMEOUT: 1000,
+  LIMIT_PER_SECOND: 10
 });
 ```
 ### enqueue
 There are two ways of enqueueing a request.
+
 1. The first way is creating a wrapper function for the call and the pushing it to the queue:
 
   ```javascript
@@ -59,19 +60,20 @@ All the options are, as you might have guessed, optional.
 This is the standard configuration:
 ```javascript
 var options = {
-  RETRY_TIMEOUT     = 1000,         // the time to wait for retrying a request
-  LIMIT_PER_SECOND  = 10,           // how many requests are available per second.
+  RETRY_TIMEOUT     : 1000,         // the time to wait for retrying a request
+  LIMIT_PER_SECOND  : 10,           // how many requests are available per second.
                                     // rule of thumb: 4.0 * 1000/LIMIT_PER_SECOND
-  SLOT_RESPAWN      = 4000,         // Time in miliseconds for respawning the slots
-  TOO_MANY_REQUESTS = 429,          // The return Status from the Server if there are too many request sent to it. If applicable.
-  INFLIGHT          = 'inflight',   // Status while the request call is active
-  FULFILLED         = 'fulfilled',  // Status when the request was successfull
-  THROTTLED         = 'throttled',  // Status when the request gets throttled
-  ERRORED           = 'errored',    // Status when the request has thrown an internal error
-  RETRY_ERRORED     = false,        // whether to retry a request if it throws an internal error or not
-  RETRY_FAILED      = false,        // whether to retry a request if it returns an http error code
+  SLOT_RESPAWN      : 4000,         // Time in miliseconds for respawning the slots
+  TOO_MANY_REQUESTS : 429,          // The return Status from the Server if there are too many request sent to it. If applicable.
+  INFLIGHT          : 'inflight',   // Status while the request call is active
+  FULFILLED         : 'fulfilled',  // Status when the request was successfull
+  THROTTLED         : 'throttled',  // Status when the request gets throttled
+  ERRORED           : 'errored',    // Status when the request has thrown an internal error
+  RETRY_ERRORED     : false,        // whether to retry a request if it throws an internal error or not
+  RETRY_FAILED      : false,        // whether to retry a request if it returns an http error code
+
   // Logger function
-  LOGGER            = function(text){console.log(text);}
+  LOGGER            : function(text){console.log(text);}
 };
 ```
 
@@ -94,7 +96,7 @@ var requestCall = function(){
 // give the request call to the baboon
 baboon.push(requestCall);
 
-// push returns a promise so you can chain it. the result is the result fromt the request call
+// push returns a promise so you can chain it. the result is the result from the request call
 baboon.push(requestCall)
         .then(function(result){
                 console.log(result);
@@ -124,4 +126,5 @@ baboon.request(requestOptions)
 ![How it works](http://i.giphy.com/pFwRzOLfuGHok.gif)
 
 ## Thanks
-The original code is written by [@agento](https://github.com/janv) and the module is enhanced and maintained by [@jbinsen](julianbei).
+The original code is written by [@agento](https://github.com/janv) and the module is enhanced and maintained by [@jbinsen](https://github.com/julianbei).
+Special thanks to [@LewisCowper](https://github.com/lewiscowper) for reviewing and testing.
