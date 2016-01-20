@@ -126,5 +126,5 @@ baboon.request(requestOptions)
 ![How it works](http://i.giphy.com/pFwRzOLfuGHok.gif)
 
 ## Thanks
-The original code is written by [@agento](https://github.com/janv) and the module is enhanced and maintained by [@jbinsen](julianbei).
+The original code is written by [@agento](https://github.com/janv) and the module is enhanced and maintained by [@jbinsen](https://github.com/julianbei).
 Special thanks to [@LewisCowper](https://github.com/lewiscowper) for reviewing and testing.

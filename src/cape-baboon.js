@@ -102,7 +102,7 @@ CapeBaboon.prototype._startPending = function(){
       //TODO not quite happy with this. I want this to appear in the
       //     console with the original stacktrace (call to adapter.request)
       if(RETRY_ERRORED){
-        LOGGER('ERROR THROTTLED');
+        LOGGER('ERROR THROTTLED', e);
         request.status = THROTTLED;
         self._proceed();
       }else{
