@@ -4,7 +4,7 @@
   "description": "Request throttler for http requests against enemy webservices with unpredictable behavior for mass requests.",
   "main": "src/cape-baboon.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tap test/*.js --cov"
   },
   "repository": {
     "type": "git",
@@ -27,5 +27,10 @@
     "bluebird": "^3.1.1",
     "lodash": "^4.0.0",
     "request-promise": "^2.0.0"
+  },
+  "devDependencies": {
+    "benchmark": "^2.0.0",
+    "nock": "^5.2.1",
+    "tap": "^5.1.1"
   }
 }
