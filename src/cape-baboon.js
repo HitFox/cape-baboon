@@ -8,7 +8,7 @@ function CapeBaboon(options) {
   options = options || {};
   this.RETRY_TIMEOUT     = options.RETRY_TIMEOUT     || 1000;                         // the time to wait for retrying a request
   this.LIMIT_PER_SECOND  = options.LIMIT_PER_SECOND  || 10;                           // the time to wait for retrying a request
-  this.SLOT_RESPAWN      = options.SLOT_RESPAWN      || 4.0 * 1000/LIMIT_PER_SECOND;  // Time in miliseconds for respawning the slots
+  this.SLOT_RESPAWN      = options.SLOT_RESPAWN      || 4.0 * 1000/this.LIMIT_PER_SECOND;  // Time in miliseconds for respawning the slots
   this.TOO_MANY_REQUESTS = options.TOO_MANY_REQUESTS || 429;                          // The return Status from the Server if there are too many request sent to it. If applicable.
   this.INFLIGHT          = options.INFLIGHT          || 'inflight';                   // Status while the request call is active
   this.FULFILLED         = options.FULFILLED         || 'fulfilled';                  // Status when the request was successfull
@@ -22,6 +22,10 @@ function CapeBaboon(options) {
   this._inflight    = [];
   this._reset();
 }
+
+CapeBaboon.prototype.logger = function(text){
+  this.LOGGER('|'+this.NAME+'| '+text);
+};
 
 CapeBaboon.prototype.push = function (call) {
   var self = this;
@@ -90,7 +94,7 @@ CapeBaboon.prototype._startPending = function(){
       .then(successHandler, errorHandler);
     } catch (e){
       if(self.RETRY_ERRORED){
-        logger('ERROR THROTTLED'+e);
+        self.logger('ERROR THROTTLED'+e);
         request.status = self.THROTTLED;
         self._proceed();
       }else{
@@ -103,9 +107,8 @@ CapeBaboon.prototype._startPending = function(){
     self._inflight.push(request);
 
     function successHandler(result){
-      var self = this;
       if (result.status === self.TOO_MANY_REQUESTS) {
-        logger('MESSAGE THROTTLED: '+result.status);
+        self.logger('MESSAGE THROTTLED: '+result.status);
         request.status = self.THROTTLED;
       } else {
         request.status = self.FULFILLED;
@@ -115,9 +118,8 @@ CapeBaboon.prototype._startPending = function(){
     }
 
     function errorHandler(error){
-      var self = this;
       if(self.RETRY_FAILED){
-        logger('FAIL THROTTLED: '+error);
+        self.logger('FAIL THROTTLED: '+error);
         request.status = self.THROTTLED;
       }else{
         request.status = self.FULFILLED;
