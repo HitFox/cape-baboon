@@ -43,6 +43,7 @@ CapeBaboon.prototype.push = function (call) {
 };
 
 CapeBaboon.prototype.request = function(options) {
+  var self = this;
   var call = function(){
     return R(options)
   };
@@ -56,10 +57,12 @@ CapeBaboon.prototype._proceed = function(){
 };
 
 CapeBaboon.prototype._removeFulfilled = function(){
+  var self = this;
   _.remove(this._inflight, {status: self.FULFILLED});
 };
 
 CapeBaboon.prototype._removeThrottled = function(){
+  var self = this;
   var throttled = _.remove(this._inflight, {status: self.THROTTLED});
   if (throttled.length > 0) this._retry(throttled);
 };
@@ -100,6 +103,7 @@ CapeBaboon.prototype._startPending = function(){
     self._inflight.push(request);
 
     function successHandler(result){
+      var self = this;
       if (result.status === self.TOO_MANY_REQUESTS) {
         logger('MESSAGE THROTTLED: '+result.status);
         request.status = self.THROTTLED;
@@ -111,6 +115,7 @@ CapeBaboon.prototype._startPending = function(){
     }
 
     function errorHandler(error){
+      var self = this;
       if(self.RETRY_FAILED){
         logger('FAIL THROTTLED: '+error);
         request.status = self.THROTTLED;
@@ -124,6 +129,7 @@ CapeBaboon.prototype._startPending = function(){
 };
 
 CapeBaboon.prototype._takeSlot = function(){
+  var self = this;
   if (this._numSlots > 0) {
     this._numSlots--;
     setTimeout(respawnSlot, self.SLOT_RESPAWN);
@@ -131,7 +137,6 @@ CapeBaboon.prototype._takeSlot = function(){
     throw new Error('No slots available');
   }
 
-  var self = this;
   function respawnSlot(){
     if (self._isWaitingForRetry()) return;
     if (self._numSlots < self.LIMIT_PER_SECOND) {
@@ -142,6 +147,7 @@ CapeBaboon.prototype._takeSlot = function(){
 };
 
 CapeBaboon.prototype._reset = function(){
+  var self = this;
   this._numSlots = self.LIMIT_PER_SECOND;
   this._retryTimeout = null;
 };
