@@ -15,6 +15,7 @@ var ERRORED           = 'not set';  // Status when the request has thrown an int
 var RETRY_ERRORED     = false;      // whether to retry a request if it throws an internal error or not
 var RETRY_FAILED      = false;      // whether to retry a request if it returns an http error code
 var LOGGER            = null        // Logger function
+var NAME              = 'not set';  // The Baboon name for log identification
 
 function CapeBaboon(options) {
   options = options || {};
@@ -29,10 +30,15 @@ function CapeBaboon(options) {
   RETRY_FAILED      = options.RETRY_FAILED      || false;
   RETRY_ERRORED     = options.RETRY_ERRORED     || false;
   LOGGER            = options.LOGGER            || function(text){console.log(text);};
+  NAME              = options.NAME              || 'Funky Baboon';
   this._pending     = [];
   this._inflight    = [];
   this._reset();
 }
+
+var logger = function(string){
+  LOGGER('|'+NAME+'|'+string);
+};
 
 CapeBaboon.prototype.push = function (call) {
   var self = this;
@@ -102,7 +108,7 @@ CapeBaboon.prototype._startPending = function(){
       //TODO not quite happy with this. I want this to appear in the
       //     console with the original stacktrace (call to adapter.request)
       if(RETRY_ERRORED){
-        LOGGER('ERROR THROTTLED'+e);
+        logger('ERROR THROTTLED'+e);
         request.status = THROTTLED;
         self._proceed();
       }else{
@@ -116,7 +122,7 @@ CapeBaboon.prototype._startPending = function(){
 
     function successHandler(result){
       if (result.status === TOO_MANY_REQUESTS) {
-        LOGGER('MESSAGE THROTTLED: '+result.status);
+        logger('MESSAGE THROTTLED: '+result.status);
         request.status = THROTTLED;
       } else {
         request.status = FULFILLED;
@@ -127,7 +133,7 @@ CapeBaboon.prototype._startPending = function(){
 
     function errorHandler(error){
       if(RETRY_FAILED){
-        LOGGER('FAIL THROTTLED: '+error);
+        logger('FAIL THROTTLED: '+error);
         request.status = THROTTLED;
       }else{
         request.status = FULFILLED;
