@@ -119,7 +119,7 @@ CapeBaboon.prototype._startPending = function(){
 
     function errorHandler(error){
       if(self.RETRY_FAILED){
-        self.logger('FAIL THROTTLED: '+error);
+        self.logger('FAIL THROTTLED: ');
         request.status = self.THROTTLED;
       }else{
         request.status = self.FULFILLED;
