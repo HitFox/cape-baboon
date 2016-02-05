@@ -1,5 +1,6 @@
 [![npm version](https://badge.fury.io/js/cape-baboon.svg)](https://badge.fury.io/js/cape-baboon) 
 [![npm](https://img.shields.io/npm/dt/cape-baboon.svg)](https://www.npmjs.com/package/cape-baboon)
+[![Build Status](https://travis-ci.org/HitFox/cape-baboon.svg?branch=master)](https://travis-ci.org/HitFox/cape-baboon)
 
 [![NPM](https://nodei.co/npm/cape-baboon.png?compact=true)](https://nodei.co/npm/cape-baboon/)
 # cape-baboon
