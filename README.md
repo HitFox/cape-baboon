@@ -1,3 +1,7 @@
+[![npm version](https://badge.fury.io/js/cape-baboon.svg)](https://badge.fury.io/js/cape-baboon) 
+[![npm](https://img.shields.io/npm/dt/cape-baboon.svg)](https://www.npmjs.com/package/cape-baboon)
+
+[![NPM](https://nodei.co/npm/cape-baboon.png?compact=true)](https://nodei.co/npm/cape-baboon/)
 # cape-baboon
 The cape baboon is a node module for mass requests to helpless enemy servers.
 ![Baboons with Car](http://i.dailymail.co.uk/i/pix/2009/07/20/article-1200917-05C68C79000005DC-619_634x399.jpg)
