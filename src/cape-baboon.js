@@ -37,7 +37,7 @@ CapeBaboon.prototype.push = function (call) {
       reject: reject,
       status: null,
       throttle: function(){
-        this.status = self.THROTTLED;
+        this.status = THROTTLED;
         self._proceed();
       }
     };
@@ -63,12 +63,12 @@ CapeBaboon.prototype._proceed = function(){
 
 CapeBaboon.prototype._removeFulfilled = function(){
   var self = this;
-  _.remove(this._inflight, {status: self.FULFILLED});
+  _.remove(this._inflight, {status: FULFILLED});
 };
 
 CapeBaboon.prototype._removeThrottled = function(){
   var self = this;
-  var throttled = _.remove(this._inflight, {status: self.THROTTLED});
+  var throttled = _.remove(this._inflight, {status: THROTTLED});
   if (throttled.length > 0) this._retry(throttled);
 };
 
@@ -89,17 +89,17 @@ CapeBaboon.prototype._startPending = function(){
 
   _.times(startRequests, function () {
     var request = self._pending.shift();
-    request.status = self.INFLIGHT;
+    request.status = INFLIGHT;
     try {
       request.call()
       .then(successHandler, errorHandler);
     } catch (e){
       if(self.RETRY_ERRORED){
         self.logger('ERROR THROTTLED'+e);
-        request.status = self.THROTTLED;
+        request.status = THROTTLED;
         self._proceed();
       }else{
-        request.status = self.ERRORED;
+        request.status = ERRORED;
         request.reject(e);
       }
       return;
@@ -110,9 +110,9 @@ CapeBaboon.prototype._startPending = function(){
     function successHandler(result){
       if (result.status === self.TOO_MANY_REQUESTS) {
         self.logger('MESSAGE THROTTLED: '+result.status);
-        request.status = self.THROTTLED;
+        request.status = THROTTLED;
       } else {
-        request.status = self.FULFILLED;
+        request.status = FULFILLED;
         request.resolve(result);
       }
       self._proceed();
@@ -121,9 +121,9 @@ CapeBaboon.prototype._startPending = function(){
     function errorHandler(error){
       if(self.RETRY_FAILED){
         self.logger('FAIL THROTTLED: ');
-        request.status = self.THROTTLED;
+        request.status = THROTTLED;
       }else{
-        request.status = self.FULFILLED;
+        request.status = FULFILLED;
         request.reject(error);
       }
       self._proceed();
