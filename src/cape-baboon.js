@@ -4,16 +4,17 @@ var _ = require('lodash');
 var R = require('request-promise');
 var P = require("bluebird");
 
+var INFLIGHT    = 'inflight',                   // Status while the request call is active
+    FULFILLED   = 'fulfilled',                  // Status when the request was successfull
+    THROTTLED   = 'throttled',                  // Status when the request gets throttled
+    ERRORED     = 'errored';                    // Status when the request has thrown an internal error
+
 function CapeBaboon(options) {
   options = options || {};
   this.RETRY_TIMEOUT     = options.RETRY_TIMEOUT     || 1000;                         // the time to wait for retrying a request
   this.LIMIT_PER_SECOND  = options.LIMIT_PER_SECOND  || 10;                           // the time to wait for retrying a request
   this.SLOT_RESPAWN      = options.SLOT_RESPAWN      || 4.0 * 1000/this.LIMIT_PER_SECOND;  // Time in miliseconds for respawning the slots
   this.TOO_MANY_REQUESTS = options.TOO_MANY_REQUESTS || 429;                          // The return Status from the Server if there are too many request sent to it. If applicable.
-  this.INFLIGHT          = options.INFLIGHT          || 'inflight';                   // Status while the request call is active
-  this.FULFILLED         = options.FULFILLED         || 'fulfilled';                  // Status when the request was successfull
-  this.THROTTLED         = options.THROTTLED         || 'throttled';                  // Status when the request gets throttled
-  this.ERRORED           = options.FAILED            || 'errored';                    // Status when the request has thrown an internal error
   this.RETRY_FAILED      = options.RETRY_FAILED      || false;                        // whether to retry a request if it throws an internal error or not
   this.RETRY_ERRORED     = options.RETRY_ERRORED     || false;                        // whether to retry a request if it returns an http error code
   this.LOGGER            = options.LOGGER            || function(text){console.log(text);}; // Logger function
