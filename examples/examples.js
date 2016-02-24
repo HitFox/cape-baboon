@@ -1,3 +1,4 @@
+'use strict'
 var CapeBaboon = require('./../src/cape-baboon');
 var Request = require('request-promise');
 
@@ -8,7 +9,7 @@ var options = {};
 var baboon = new CapeBaboon(options);
 
 // define request call
-var requestCall = function(){
+var requestCall = function () {
   return Request('http://www.google.de')
 };
 
