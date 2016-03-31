@@ -12,6 +12,7 @@ nock.disableNetConnect();
 tap.test('baboon.request tests', function (test) {
   var baboon = new CapeBaboon();
   test.plan(2);
+
   //Good health server, fail on second connection
   nock('http://www.example.com')
     .get('/good-health')
@@ -21,7 +22,7 @@ tap.test('baboon.request tests', function (test) {
 
   //A request to the good health server to make sure we are making the request
   var requestOptionsGoodHealth = {
-    uri: 'http://www.example.com/good-health'
+    uri: 'http://www.example.com/good-health',
   };
 
   baboon.request(requestOptionsGoodHealth)
@@ -31,6 +32,7 @@ tap.test('baboon.request tests', function (test) {
     .catch(function (err) {
       test.fail('Unsuccessful HTTP status received from a server in good health 1');
     });
+
   baboon.request(requestOptionsGoodHealth)
     .then(function () {
       test.fail('Successful HTTP status received from a server in good health 2');
@@ -42,7 +44,8 @@ tap.test('baboon.request tests', function (test) {
 
 //Retry on failure with catch block hit first, then retry.
 tap.test('baboon.requests retry on failure tests', function (test) {
-  var baboon = new CapeBaboon({RETRY_FAILED: true, RETRY_TIMEOUT: 10, LOGGER: function () {}});
+  var baboon = new CapeBaboon({ RETRY_FAILED: true, RETRY_TIMEOUT: 10, LOGGER: function () {} });
+
   test.plan(1);
   nock('http://www.example.com')
     .get('/retry-on-failure')
@@ -51,12 +54,13 @@ tap.test('baboon.requests retry on failure tests', function (test) {
     .reply(200, 'OK');
 
   var requestOptionsRetryOnFailure = {
-    uri: 'http://www.example.com/retry-on-failure'
-  }
+    uri: 'http://www.example.com/retry-on-failure',
+  };
 
   baboon.request(requestOptionsRetryOnFailure)
     .then(function () {
-      test.pass('Single failed request should lead to a resolved promise after a successful request');
+      test.pass('Single failed request should lead to a ' +
+      'resolved promise after a successful request');
     })
     .catch(function (err) {
       test.fail(err);
@@ -64,7 +68,8 @@ tap.test('baboon.requests retry on failure tests', function (test) {
 });
 
 tap.test('baboon.requests retry on error tests', function (test) {
-  var baboon = new CapeBaboon({RETRY_ERROR: true, RETRY_TIMEOUT: 10, LOGGER: function () {}});
+  var baboon = new CapeBaboon({ RETRY_ERROR: true, RETRY_TIMEOUT: 10, LOGGER: function () {} });
+
   test.plan(1);
   nock('http://www.example.com')
     .get('/reply-with-error')
@@ -73,8 +78,8 @@ tap.test('baboon.requests retry on error tests', function (test) {
     .reply(200, 'OK');
 
   var requestOptionsReplyWithError = {
-    uri: 'http://www.example.com/reply-with-error'
-  }
+    uri: 'http://www.example.com/reply-with-error',
+  };
 
   baboon.request(requestOptionsReplyWithError)
     .then(function () {
@@ -86,12 +91,13 @@ tap.test('baboon.requests retry on error tests', function (test) {
 });
 
 tap.test('baboon.requests retry on error set to false', function (test) {
-  var baboon = new CapeBaboon({RETRY_ERROR: false, RETRY_TIMEOUT: 10, LOGGER: function () {}});
+  var baboon = new CapeBaboon({ RETRY_ERROR: false, RETRY_TIMEOUT: 10, LOGGER: function () {} });
+
   test.plan(1);
 
   var requestOptionsReplyWithError = {
-    uri: 'sdfghjk'
-  }
+    uri: 'sdfghjk',
+  };
 
   baboon.request(requestOptionsReplyWithError)
     .then(function () {

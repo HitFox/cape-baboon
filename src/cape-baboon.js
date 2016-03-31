@@ -1,161 +1,182 @@
 'use strict';
 
-var _ = require('lodash');
-var R = require('request-promise');
-var P = require("bluebird");
+const _ = require('lodash');
+const Promise = require('bluebird');
 
-var INFLIGHT    = 'inflight',                   // Status while the request call is active
-    FULFILLED   = 'fulfilled',                  // Status when the request was successfull
-    THROTTLED   = 'throttled',                  // Status when the request gets throttled
-    ERRORED     = 'errored';                    // Status when the request has thrown an internal error
+const    INFLIGHT    = 'inflight';  // Status while the request call is active
+const    FULFILLED   = 'fulfilled'; // Status when the request was successfull
+const    THROTTLED   = 'throttled'; // Status when the request gets throttled
+const    ERRORED     = 'errored';   // Status when the request has thrown an internal error
 
 function CapeBaboon(options) {
   options = options || {};
-  this.RETRY_TIMEOUT     = options.RETRY_TIMEOUT     || 1000;                         // the time to wait for retrying a request
-  this.LIMIT_PER_SECOND  = options.LIMIT_PER_SECOND  || 10;                           // the time to wait for retrying a request
-  this.SLOT_RESPAWN      = options.SLOT_RESPAWN      || 4.0 * 1000/this.LIMIT_PER_SECOND;  // Time in miliseconds for respawning the slots
-  this.TOO_MANY_REQUESTS = options.TOO_MANY_REQUESTS || 429;                          // The return Status from the Server if there are too many request sent to it. If applicable.
-  this.RETRY_FAILED      = options.RETRY_FAILED      || false;                        // whether to retry a request if it throws an internal error or not
-  this.RETRY_ERRORED     = options.RETRY_ERRORED     || false;                        // whether to retry a request if it returns an http error code
-  this.LOGGER            = options.LOGGER            || function(text){console.log(text);}; // Logger function
-  this.NAME              = options.NAME              || 'Funky Baboon';               // The Baboon name for log identification
+
+  // the time to wait for retrying a request
+  this.RETRY_TIMEOUT     = options.RETRY_TIMEOUT     || 1000;
+
+  // the time to wait for retrying a request
+  this.LIMIT_PER_SECOND  = options.LIMIT_PER_SECOND  || 10;
+
+  // Time in miliseconds for respawning the slots
+  this.SLOT_RESPAWN      = options.SLOT_RESPAWN      || 4.0 * 1000 / this.LIMIT_PER_SECOND;
+
+  // The return Status from the Server if there are too many request sent to it. If applicable.
+  this.TOO_MANY_REQUESTS = options.TOO_MANY_REQUESTS || 429;
+
+  // whether to retry a request if it throws an internal error or not
+  this.RETRY_FAILED      = options.RETRY_FAILED      || false;
+
+  // whether to retry a request if it returns an http error code
+  this.RETRY_ERRORED     = options.RETRY_ERRORED     || false;
+
+  // Logger function
+  this.LOGGER            = options.LOGGER            || function (text) {console.log(text); };
+
+  // The Baboon name for log identification
+  this.NAME              = options.NAME              || 'Funky Baboon';
+
+  // The request Lib (must return a promise)
+  this.REQUEST           = options.REQUEST           || require('request-promise');
+
   this._pending     = [];
   this._inflight    = [];
   this._reset();
 }
 
-CapeBaboon.prototype.logger = function(text){
-  this.LOGGER('|'+this.NAME+'| '+text);
+CapeBaboon.prototype.logger = function (text) {
+  this.LOGGER('|' + this.NAME + '| ' + text);
 };
 
 CapeBaboon.prototype.push = function (call) {
-  var self = this;
-  var promise = new P(function(resolve, reject){
+  var _this = this;
+  var promise = new Promise((resolve, reject) => {
     var requestObject = {
       call: call,
       resolve: resolve,
       reject: reject,
       status: null,
-      throttle: function(){
+      throttle: function () {
         this.status = THROTTLED;
-        self._proceed();
-      }
+        _this._proceed();
+      },
     };
-    self._pending.push(requestObject);
+    _this._pending.push(requestObject);
   });
+
   this._proceed();
   return promise;
 };
 
-CapeBaboon.prototype.request = function(options) {
-  var self = this;
-  var call = function(){
-    return R(options)
-  };
-  return this.push(call);
+CapeBaboon.prototype.request = function (options) {
+  var _this = this;
+  var call = () => _this.REQUEST(options);
+  return _this.push(call);
 };
 
-CapeBaboon.prototype._proceed = function(){
+CapeBaboon.prototype._proceed = function () {
   this._removeFulfilled();
   this._removeThrottled();
   this._startPending();
 };
 
-CapeBaboon.prototype._removeFulfilled = function(){
-  var self = this;
-  _.remove(this._inflight, {status: FULFILLED});
+CapeBaboon.prototype._removeFulfilled = function () {
+  var _this = this;
+  _.remove(_this._inflight, { status: FULFILLED });
 };
 
-CapeBaboon.prototype._removeThrottled = function(){
-  var self = this;
-  var throttled = _.remove(this._inflight, {status: THROTTLED});
+CapeBaboon.prototype._removeThrottled = function () {
+  var _this = this;
+  var throttled = _.remove(this._inflight, { status: THROTTLED });
   if (throttled.length > 0) this._retry(throttled);
 };
 
-CapeBaboon.prototype._retry = function(requests){
-  var self = this;
-  this._pending.unshift.apply(this._pending, requests);
-  this._retryTimeout = setTimeout(function(){
-    self._reset();
-    self._proceed();
-  }, self.RETRY_TIMEOUT);
-  self._numSlots = 0;
+CapeBaboon.prototype._retry = function (requests) {
+  var _this = this;
+  this._pending.unshift.apply(_this._pending, requests);
+  this._retryTimeout = setTimeout(function () {
+    _this._reset();
+    _this._proceed();
+  }, _this.RETRY_TIMEOUT);
+  _this._numSlots = 0;
 };
 
-
-CapeBaboon.prototype._startPending = function(){
-  var self = this;
+CapeBaboon.prototype._startPending = function () {
+  var _this = this;
   var startRequests = Math.min(this._numSlots, this._pending.length);
 
-  _.times(startRequests, function () {
-    var request = self._pending.shift();
+  _.times(startRequests, () => {
+    var request = _this._pending.shift();
     request.status = INFLIGHT;
     try {
       request.call()
       .then(successHandler, errorHandler);
-    } catch (e){
-      if(self.RETRY_ERRORED){
-        self.logger('ERROR THROTTLED'+e);
+    } catch (e) {
+      if (_this.RETRY_ERRORED) {
+        _this.logger('ERROR THROTTLED' + e);
         request.status = THROTTLED;
-        self._proceed();
-      }else{
+        _this._proceed();
+      }else {
         request.status = ERRORED;
         request.reject(e);
       }
+
       return;
     }
-    self._takeSlot();
-    self._inflight.push(request);
 
-    function successHandler(result){
-      if (result.status === self.TOO_MANY_REQUESTS) {
-        self.logger('MESSAGE THROTTLED: '+result.status);
+    _this._takeSlot();
+    _this._inflight.push(request);
+
+    function successHandler(result) {
+      if (result.status === _this.TOO_MANY_REQUESTS) {
+        _this.logger('MESSAGE THROTTLED: ' + result.status);
         request.status = THROTTLED;
       } else {
         request.status = FULFILLED;
         request.resolve(result);
       }
-      self._proceed();
+
+      _this._proceed();
     }
 
-    function errorHandler(error){
-      if(self.RETRY_FAILED){
-        self.logger('FAIL THROTTLED: ');
+    function errorHandler(error) {
+      if (_this.RETRY_FAILED) {
+        _this.logger('FAIL THROTTLED: ');
         request.status = THROTTLED;
-      }else{
+      }else {
         request.status = FULFILLED;
         request.reject(error);
       }
-      self._proceed();
+
+      _this._proceed();
     }
   });
 };
 
-CapeBaboon.prototype._takeSlot = function(){
-  var self = this;
+CapeBaboon.prototype._takeSlot = function () {
+  var _this = this;
   if (this._numSlots > 0) {
     this._numSlots--;
-    setTimeout(respawnSlot, self.SLOT_RESPAWN);
+    setTimeout(respawnSlot, _this.SLOT_RESPAWN);
   } else {
     throw new Error('No slots available');
   }
 
-  function respawnSlot(){
-    if (self._isWaitingForRetry()) return;
-    if (self._numSlots < self.LIMIT_PER_SECOND) {
-      self._numSlots++;
-      self._proceed();
+  function respawnSlot() {
+    if (_this._isWaitingForRetry()) return;
+    if (_this._numSlots < _this.LIMIT_PER_SECOND) {
+      _this._numSlots++;
+      _this._proceed();
     }
   }
 };
 
-CapeBaboon.prototype._reset = function(){
-  var self = this;
-  this._numSlots = self.LIMIT_PER_SECOND;
+CapeBaboon.prototype._reset = function () {
+  var _this = this;
+  this._numSlots = _this.LIMIT_PER_SECOND;
   this._retryTimeout = null;
 };
 
-CapeBaboon.prototype._isWaitingForRetry = function(){
+CapeBaboon.prototype._isWaitingForRetry = function () {
   return this._retryTimeout !== null && this._retryTimeout !== undefined;
 };
 
