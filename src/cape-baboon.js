@@ -26,6 +26,18 @@ function CapeBaboon(options) {
   // whether to retry a request if it throws an internal error or not
   this.RETRY_FAILED      = options.RETRY_FAILED      || false;
 
+  // VALIDATOR for status 200
+  this.VALIDATOR         = options.VALIDATOR         || function () { return true; };
+
+  // error callback
+  this.ERROR_CALLBACK    = options.ERROR_CALLBACK    || function () {return;};
+
+  // max attemps
+  this.MAX_ATTEMPS       = options.MAX_ATTEMPS       || 10;
+
+  // fail callback
+  this.FAIL_CALLBACK     = options.FAIL_CALLBACK     || function () {return;};
+
   // whether to retry a request if it returns an http error code
   this.RETRY_ERRORED     = options.RETRY_ERRORED     || false;
 
@@ -55,6 +67,7 @@ CapeBaboon.prototype.push = function (call) {
       resolve: resolve,
       reject: reject,
       status: null,
+      attemps: 1,
       throttle: function () {
         this.status = THROTTLED;
         _this._proceed();
@@ -108,12 +121,21 @@ CapeBaboon.prototype._startPending = function () {
     var request = _this._pending.shift();
     request.status = INFLIGHT;
     try {
+      request.attemps++;
       request.call()
       .then(successHandler, errorHandler);
     } catch (e) {
       if (_this.RETRY_ERRORED) {
-        _this.logger('ERROR THROTTLED' + e);
-        request.status = THROTTLED;
+        if (this.MAX_ATTEMPS < request.attemps) {
+          _this.logger('ERROR THROTTLED' + e);
+          request.status = THROTTLED;
+          _this.ERROR_CALLBACK();
+        }else {
+          _this.logger('MESSAGE REACHED MAX ATTEMPS LIMIT: ' + result.status);
+          request.status = MAX_ATTEMPS;
+          request.reject(result);
+        }
+
         _this._proceed();
       }else {
         request.status = ERRORED;
@@ -127,9 +149,16 @@ CapeBaboon.prototype._startPending = function () {
     _this._inflight.push(request);
 
     function successHandler(result) {
-      if (result.status === _this.TOO_MANY_REQUESTS) {
-        _this.logger('MESSAGE THROTTLED: ' + result.status);
-        request.status = THROTTLED;
+      if (result.status === _this.TOO_MANY_REQUESTS || !_this.VALIDATOR()) {
+        if (this.MAX_ATTEMPS < request.attemps) {
+          _this.logger('MESSAGE THROTTLED: ' + result.status);
+          request.status = THROTTLED;
+          _this.FAIL_CALLBACK();
+        }else {
+          _this.logger('MESSAGE REACHED MAX ATTEMPS LIMIT: ' + result.status);
+          request.status = MAX_ATTEMPS;
+          request.reject(result);
+        }
       } else {
         request.status = FULFILLED;
         request.resolve(result);
@@ -140,8 +169,15 @@ CapeBaboon.prototype._startPending = function () {
 
     function errorHandler(error) {
       if (_this.RETRY_FAILED) {
-        _this.logger('FAIL THROTTLED: ');
-        request.status = THROTTLED;
+        if (this.MAX_ATTEMPS < request.attemps) {
+          _this.logger('ERROR THROTTLED: ' + result.status);
+          request.status = THROTTLED;
+          _this.ERROR_CALLBACK();
+        }else {
+          _this.logger('MESSAGE REACHED MAX ATTEMPS LIMIT: ' + result.status);
+          request.status = MAX_ATTEMPS;
+          request.reject(result);
+        }
       }else {
         request.status = FULFILLED;
         request.reject(error);
