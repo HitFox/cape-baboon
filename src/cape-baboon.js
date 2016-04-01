@@ -121,20 +121,19 @@ CapeBaboon.prototype._startPending = function () {
     var request = _this._pending.shift();
     request.status = INFLIGHT;
     try {
-      request.attemps++;
-      request.call()
-      .then(successHandler, errorHandler);
+      if (request.attemps <= _this.MAX_ATTEMPS) {
+        request.attemps++;
+        request.call().then(successHandler, errorHandler);
+      }else {
+        console.log('max attemps reached for:', request);
+        request.resolve();
+      }
     } catch (e) {
       if (_this.RETRY_ERRORED) {
-        if (this.MAX_ATTEMPS < request.attemps) {
-          _this.logger('ERROR THROTTLED' + e);
-          request.status = THROTTLED;
-          _this.ERROR_CALLBACK();
-        }else {
-          _this.logger('MESSAGE REACHED MAX ATTEMPS LIMIT: ' + result.status);
-          request.status = MAX_ATTEMPS;
-          request.reject(result);
-        }
+
+        _this.logger('ERROR THROTTLED' + e);
+        request.status = THROTTLED;
+        _this.ERROR_CALLBACK();
 
         _this._proceed();
       }else {
@@ -150,15 +149,11 @@ CapeBaboon.prototype._startPending = function () {
 
     function successHandler(result) {
       if (result.status === _this.TOO_MANY_REQUESTS || !_this.VALIDATOR()) {
-        if (this.MAX_ATTEMPS < request.attemps) {
-          _this.logger('MESSAGE THROTTLED: ' + result.status);
-          request.status = THROTTLED;
-          _this.FAIL_CALLBACK();
-        }else {
-          _this.logger('MESSAGE REACHED MAX ATTEMPS LIMIT: ' + result.status);
-          request.status = MAX_ATTEMPS;
-          request.reject(result);
-        }
+
+        _this.logger('MESSAGE THROTTLED: ' + result.status);
+        request.status = THROTTLED;
+        _this.FAIL_CALLBACK();
+
       } else {
         request.status = FULFILLED;
         request.resolve(result);
@@ -169,15 +164,11 @@ CapeBaboon.prototype._startPending = function () {
 
     function errorHandler(error) {
       if (_this.RETRY_FAILED) {
-        if (this.MAX_ATTEMPS < request.attemps) {
-          _this.logger('ERROR THROTTLED: ' + result.status);
-          request.status = THROTTLED;
-          _this.ERROR_CALLBACK();
-        }else {
-          _this.logger('MESSAGE REACHED MAX ATTEMPS LIMIT: ' + result.status);
-          request.status = MAX_ATTEMPS;
-          request.reject(result);
-        }
+
+        _this.logger('ERROR THROTTLED: ');
+        request.status = THROTTLED;
+        _this.ERROR_CALLBACK();
+
       }else {
         request.status = FULFILLED;
         request.reject(error);

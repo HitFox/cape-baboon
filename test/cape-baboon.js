@@ -67,6 +67,40 @@ tap.test('baboon.requests retry on failure tests', function (test) {
     });
 });
 
+tap.test('baboon.requests max attemps', function (test) {
+  var baboon = new CapeBaboon({ RETRY_ERROR: true,
+                                RETRY_FAILED: true,
+                                RETRY_TIMEOUT: 1,
+
+                                //LOGGER: function () {},
+
+                                MAX_ATTEMPS: 2, });
+
+  test.plan(1);
+  nock('http://www.example.com')
+    .get('/reply-with-error')
+    .replyWithError('ENOTFOUND')
+    .get('/reply-with-error')
+    .replyWithError('ENOTFOUND')
+    .get('/reply-with-error')
+    .replyWithError('ENOTFOUND');
+
+  var requestOptionsReplyWithError = {
+    uri: 'http://www.example.com/reply-with-error',
+  };
+
+  baboon.request(requestOptionsReplyWithError)
+    .then(function (obj) {
+      console.log(obj);
+      test.pass('promise should not be resolved');
+    })
+    .catch(function (err) {
+      console.log('cought error');
+      console.log(err);
+      test.fail('Error should be caught');
+    });
+});
+
 tap.test('baboon.requests retry on error tests', function (test) {
   var baboon = new CapeBaboon({ RETRY_ERROR: true, RETRY_TIMEOUT: 10, LOGGER: function () {} });
 
